@@ -1,0 +1,12 @@
+BLOOM V9 — CINEMATIC FLORAL MOTION
+
+What changed:
+- Added a fixed floral-flight layer that carries transparent petals, leaves and stems through the transition from the hero toward the atelier.
+- Rebuilt the atelier as a scroll-pinned bouquet assembly sequence: stems arrive, balance, bouquet appears, petals finish the composition.
+- Added desktop pointer parallax to hero copy/gallery.
+- Added subtle light sweep on the hero image.
+- Added refined product, occasion and editorial hover motion.
+- Added mobile-specific motion scaling and reduced element count to keep the layout clean and readable.
+- Respects prefers-reduced-motion.
+
+No new runtime dependencies were added.

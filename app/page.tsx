@@ -13,6 +13,19 @@ const HEROES = [1,2,3,4,5].map(i => `/assets/hero-${i}.png`);
 const FLOATERS = Array.from({length:14},(_,i)=>`/assets/floating-${String(i+1).padStart(2,'0')}.png`);
 const EDITORIALS = Array.from({length:7},(_,i)=>`/assets/editorial-${String(i+1).padStart(2,'0')}.png`);
 
+const FLORAL_FLIGHT = [
+  {src:'/assets/floating-01.png',left:7,top:14,size:68,dx:180,dy:210,rot:360,depth:.72},
+  {src:'/assets/floating-02.png',left:18,top:5,size:76,dx:260,dy:260,rot:-420,depth:.82},
+  {src:'/assets/floating-09.png',left:31,top:12,size:88,dx:-150,dy:300,rot:310,depth:.55},
+  {src:'/assets/floating-10.png',left:74,top:9,size:92,dx:-230,dy:250,rot:-330,depth:.58},
+  {src:'/assets/floating-07.png',left:88,top:25,size:116,dx:-250,dy:320,rot:260,depth:.52},
+  {src:'/assets/floating-11.png',left:91,top:55,size:104,dx:-320,dy:180,rot:-300,depth:.9},
+  {src:'/assets/floating-13.png',left:12,top:61,size:110,dx:280,dy:160,rot:280,depth:.92},
+  {src:'/assets/floating-14.png',left:56,top:2,size:102,dx:70,dy:280,rot:-360,depth:.76},
+  {src:'/assets/floating-01.png',left:44,top:66,size:56,dx:140,dy:110,rot:440,depth:.66},
+  {src:'/assets/floating-02.png',left:67,top:69,size:62,dx:-170,dy:120,rot:-410,depth:.7},
+];
+
 const PRODUCTS = [
   ['Ivory Whisper', 1450, 'Whites'], ['Velvet Promise', 1790, 'Bold'], ['Soft Morning', 1350, 'Romantic'],
   ['Golden Hour', 1890, 'Gift'], ['Sage & Silk', 1690, 'Whites'], ['Pearl Garden', 1550, 'Romantic'],
@@ -44,10 +57,52 @@ function StoreNav({cartCount,onCart}:{cartCount:number;onCart:()=>void}){
   </>;
 }
 
+function FloralFlight(){
+  const layerRef=useRef<HTMLDivElement>(null);
+  const itemRefs=useRef<(HTMLDivElement|null)[]>([]);
+  useLayoutEffect(()=>{
+    if(!layerRef.current)return;
+    const reduce=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const mobile=window.matchMedia('(max-width: 700px)').matches;
+    const items=itemRefs.current.filter((el):el is HTMLDivElement=>Boolean(el));
+    const ctx=gsap.context(()=>{
+      gsap.set(items,{autoAlpha:0,scale:.52,force3D:true,transformOrigin:'50% 50%'});
+      if(reduce)return;
+      const tl=gsap.timeline({scrollTrigger:{trigger:'#home',start:'top top',endTrigger:'#atelier',end:'55% center',scrub: mobile ? 0.42 : 0.2,invalidateOnRefresh:true}});
+      tl.to(layerRef.current,{autoAlpha:1,duration:.03},0);
+      items.forEach((el,i)=>{
+        const f=FLORAL_FLIGHT[i];
+        const dir=i%2===0?1:-1;
+        tl.to(el,{autoAlpha:.9,scale:.82+(i%3)*.08,x:f.dx*.28,y:f.dy*.22,rotation:f.rot*.2,duration:.18,ease:'power2.out'},i*.012)
+          .to(el,{x:f.dx*dir,y:f.dy+120+(i%4)*32,rotation:f.rot,scale:.96+(f.depth*.1),duration:.48,ease:'sine.inOut'},.2+i*.008)
+          .to(el,{x:f.dx*-.36,y:f.dy*.18-70,rotation:f.rot*1.45,scale:.72+(f.depth*.08),duration:.3,ease:'sine.inOut'},.68+i*.004)
+          .to(el,{autoAlpha:0,scale:.45,duration:.07,ease:'none'},.96);
+      });
+    },layerRef);
+    return()=>ctx.revert();
+  },[]);
+  return <div ref={layerRef} className="floral-flight" aria-hidden="true">{FLORAL_FLIGHT.map((f,i)=><div key={`${f.src}-${i}`} ref={el=>{itemRefs.current[i]=el}} className="floral-flight-item" style={{left:`${f.left}%`,top:`${f.top}%`,width:f.size,height:f.size}}><Image src={f.src} alt="" fill sizes="120px"/></div>)}</div>;
+}
+
 function Hero(){
   const [active,setActive]=useState(0);
   const heroRef=useRef<HTMLElement>(null);
   useEffect(()=>{ const t=setInterval(()=>setActive(v=>(v+1)%HEROES.length),5200); return()=>clearInterval(t);},[]);
+  useEffect(()=>{
+    const el=heroRef.current;
+    if(!el || window.matchMedia('(pointer: coarse)').matches || window.matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+    const gallery=el.querySelector<HTMLElement>('.hero-gallery');
+    const copy=el.querySelector<HTMLElement>('.hero-copy');
+    if(!gallery||!copy)return;
+    const gx=gsap.quickTo(gallery,'x',{duration:1.1,ease:'power3.out'});
+    const gy=gsap.quickTo(gallery,'y',{duration:1.1,ease:'power3.out'});
+    const cx=gsap.quickTo(copy,'x',{duration:1.3,ease:'power3.out'});
+    const cy=gsap.quickTo(copy,'y',{duration:1.3,ease:'power3.out'});
+    const move=(e:PointerEvent)=>{const r=el.getBoundingClientRect();const nx=(e.clientX-r.left)/r.width-.5;const ny=(e.clientY-r.top)/r.height-.5;gx(nx*16);gy(ny*12);cx(nx*-7);cy(ny*-5)};
+    const leave=()=>{gx(0);gy(0);cx(0);cy(0)};
+    el.addEventListener('pointermove',move);el.addEventListener('pointerleave',leave);
+    return()=>{el.removeEventListener('pointermove',move);el.removeEventListener('pointerleave',leave)};
+  },[]);
   useLayoutEffect(()=>{
     const ctx=gsap.context(()=>{
       gsap.set(['.hero-kicker','.hero-title-line','.hero-lead','.hero-cta-row','.hero-photo-shell','.hero-badge','.hero-thumbs','.hero-service-strip','.hero-side-note'],{autoAlpha:0});
@@ -131,44 +186,59 @@ function Shop({onAdd}:{onAdd:(p:typeof PRODUCTS[number])=>void}){
 
 function BouquetMotion(){
   const ref=useRef<HTMLElement>(null);
-  const [bloomed,setBloomed]=useState(false);
-  useEffect(()=>{
+  const pieceRefs=useRef<(HTMLDivElement|null)[]>([]);
+  const bouquetRef=useRef<HTMLDivElement>(null);
+  const copyRef=useRef<HTMLDivElement>(null);
+  const stepRefs=useRef<(HTMLSpanElement|null)[]>([]);
+  const pieces=[
+    {src:'/assets/floating-11.png',x:-220,y:-115,r:-22,s:.84,cls:'stem red'},
+    {src:'/assets/floating-12.png',x:215,y:-128,r:18,s:.8,cls:'stem white'},
+    {src:'/assets/floating-13.png',x:-165,y:118,r:-16,s:.74,cls:'stem pink'},
+    {src:'/assets/floating-14.png',x:170,y:110,r:16,s:.72,cls:'stem yellow'},
+    {src:'/assets/floating-07.png',x:-265,y:30,r:-28,s:.72,cls:'leaf branch'},
+    {src:'/assets/floating-10.png',x:255,y:38,r:25,s:.68,cls:'leaf single'},
+  ];
+  useLayoutEffect(()=>{
+    if(!ref.current)return;
+    const reduce=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const mobile=window.matchMedia('(max-width: 700px)').matches;
+    const items=pieceRefs.current.filter((el):el is HTMLDivElement=>Boolean(el));
     const ctx=gsap.context(()=>{
-      gsap.fromTo('.signature-main',{y:55,scale:.94,opacity:0},{y:0,scale:1,opacity:1,duration:1.25,ease:'power3.out',scrollTrigger:{trigger:ref.current,start:'top 68%'}});
-      gsap.fromTo('.signature-copy > *',{y:28,opacity:0},{y:0,opacity:1,duration:.8,stagger:.09,ease:'power3.out',scrollTrigger:{trigger:ref.current,start:'top 72%'}});
-      gsap.to('.botanical-a',{y:-22,rotation:7,duration:4.5,yoyo:true,repeat:-1,ease:'sine.inOut'});
-      gsap.to('.botanical-b',{y:18,rotation:-8,duration:5.2,yoyo:true,repeat:-1,ease:'sine.inOut'});
-      gsap.to('.botanical-c',{x:14,y:-10,rotation:5,duration:4.8,yoyo:true,repeat:-1,ease:'sine.inOut'});
-      gsap.to('.signature-main',{y:-18,scrollTrigger:{trigger:ref.current,start:'top bottom',end:'bottom top',scrub:1.3}});
+      if(reduce){gsap.set([bouquetRef.current,...items],{autoAlpha:1,x:0,y:0,rotation:0,scale:1});return;}
+      gsap.set(bouquetRef.current,{autoAlpha:0,scale:.72,y:55,rotation:-3});
+      items.forEach((el,i)=>{const p=pieces[i];gsap.set(el,{autoAlpha:0,x:p.x*(mobile ? 0.55 : 1.35),y:p.y*(mobile ? 0.7 : 1.45),rotation:p.r*2.2,scale:.5})});
+      gsap.set(copyRef.current?.children||[],{autoAlpha:0,y:28});
+      gsap.set(stepRefs.current,{opacity:.28});
+      const tl=gsap.timeline({scrollTrigger:{trigger:ref.current,start:'top top',end:()=>`+=${mobile?Math.max(window.innerHeight*2.7,1800):2600}`,scrub: mobile ? 0.38 : 0.18,pin:true,pinSpacing:true,anticipatePin:1,invalidateOnRefresh:true}});
+      tl.to(copyRef.current?.children||[],{autoAlpha:1,y:0,stagger:.08,duration:.5,ease:'power3.out'},0)
+        .to(stepRefs.current[0],{opacity:1,duration:.15},.08);
+      items.forEach((el,i)=>{const p=pieces[i];tl.to(el,{autoAlpha:1,x:p.x*(mobile ? 0.34 : 0.48),y:p.y*(mobile ? 0.38 : 0.55),rotation:p.r*.6,scale:p.s,duration:.52,ease:'back.out(1.15)'},.32+i*.07)});
+      tl.to(stepRefs.current[0],{opacity:.28,duration:.12},1.05).to(stepRefs.current[1],{opacity:1,duration:.12},1.05)
+        .to(items,{x:(i)=>pieces[i].x*(mobile ? 0.12 : 0.18),y:(i)=>pieces[i].y*(mobile ? 0.12 : 0.2),rotation:(i)=>pieces[i].r*.25,scale:(i)=>pieces[i].s*.82,duration:.62,ease:'sine.inOut'},1.08)
+        .to(bouquetRef.current,{autoAlpha:1,scale:1,y:0,rotation:0,duration:.74,ease:'power3.out'},1.22)
+        .to(stepRefs.current[1],{opacity:.28,duration:.12},1.72).to(stepRefs.current[2],{opacity:1,duration:.12},1.72)
+        .to(items,{x:(i)=>pieces[i].x*(mobile ? 0.26 : 0.4),y:(i)=>pieces[i].y*(mobile ? 0.24 : 0.38),rotation:(i)=>pieces[i].r*.7,scale:(i)=>pieces[i].s*.58,opacity:.82,duration:.52,ease:'sine.inOut'},1.75)
+        .to('.alchemy-ring',{rotation:240,scale:1.08,opacity:.7,duration:.7,ease:'sine.inOut'},1.58)
+        .to('.alchemy-petal',{autoAlpha:.88,x:(i)=>[[-105,-78],[118,-64],[-88,92],[108,82]][i%4][0]*(mobile ? 0.62 : 1),y:(i)=>[[-105,-78],[118,-64],[-88,92],[108,82]][i%4][1]*(mobile ? 0.62 : 1),rotation:(i)=>i%2?42:-35,scale:1,duration:.6,stagger:.045,ease:'power3.out'},1.82)
+        .to([bouquetRef.current,...items],{y:'-=12',duration:.55,ease:'sine.inOut'},2.32)
+        .to('.alchemy-caption',{autoAlpha:1,y:0,duration:.35,ease:'power2.out'},2.18);
     },ref);
     return()=>ctx.revert();
   },[]);
-  useEffect(()=>{
-    if(!ref.current)return;
-    const petals=ref.current.querySelectorAll('.bloom-petal');
-    gsap.to(petals,{x:(i)=>bloomed?[[-120,-50],[135,-45],[-90,105],[118,95]][i%4][0]:0,y:(i)=>bloomed?[[-120,-50],[135,-45],[-90,105],[118,95]][i%4][1]:0,rotation:(i)=>bloomed?(i%2?34:-28):0,scale:bloomed?1.04:.7,opacity:bloomed?.9:.42,duration:1.15,stagger:.06,ease:'power3.inOut'});
-  },[bloomed]);
-  return <section id="atelier" className="signature-section section" ref={ref}>
-    <div className="signature-visual">
-      <div className="signature-frame">
-        <span className="frame-label">BLOOM / SIGNATURE No. 04</span>
-        <div className="signature-orbit"/>
-        <Image className="signature-main" src="/assets/floating-04.png" alt="Signature pink bouquet" width={620} height={620}/>
-        <Image className="bloom-petal petal-one" src="/assets/floating-01.png" alt="Rose petal" width={95} height={95}/>
-        <Image className="bloom-petal petal-two" src="/assets/floating-02.png" alt="Rose petal" width={110} height={110}/>
-        <Image className="bloom-petal petal-three" src="/assets/floating-01.png" alt="Rose petal" width={75} height={75}/>
-        <Image className="bloom-petal petal-four" src="/assets/floating-02.png" alt="Rose petal" width={84} height={84}/>
-      </div>
-      <Image className="botanical botanical-a" src="/assets/floating-07.png" alt="Botanical branch" width={190} height={240}/>
-      <Image className="botanical botanical-b" src="/assets/floating-12.png" alt="White rose" width={150} height={210}/>
-      <Image className="botanical botanical-c" src="/assets/floating-10.png" alt="Leaf" width={150} height={110}/>
+  return <section id="atelier" className="floral-alchemy" ref={ref}>
+    <div className="alchemy-copy" ref={copyRef}>
+      <p className="eyebrow">THE ART OF THE BOUQUET</p>
+      <h2>From single stems<br/><em>to one beautiful story.</em></h2>
+      <p>Scroll slowly. Each flower finds its place, the balance settles, and the final wrap turns the arrangement into a gift.</p>
+      <div className="alchemy-steps"><span ref={el=>{stepRefs.current[0]=el}}><b>01</b> STEMS</span><span ref={el=>{stepRefs.current[1]=el}}><b>02</b> BALANCE</span><span ref={el=>{stepRefs.current[2]=el}}><b>03</b> WRAP</span></div>
+      <button className="primary-btn" onClick={()=>document.getElementById('shop')?.scrollIntoView({behavior:'smooth'})}>Shop the finished bouquet <ArrowRight size={16}/></button>
     </div>
-    <div className="signature-copy">
-      <p className="eyebrow">THE BLOOM SIGNATURE</p>
-      <h2>Composed with restraint.<br/><em>Finished with feeling.</em></h2>
-      <p>One focal bouquet, a few deliberate details, and room for every flower to breathe. This is our approach to modern gifting — elegant, balanced and never overdone.</p>
-      <div className="signature-points"><span><b>01</b> Premium stems</span><span><b>02</b> Hand-tied balance</span><span><b>03</b> Signature wrapping</span></div>
-      <div className="signature-actions"><button className="primary-btn" onClick={()=>document.getElementById('shop')?.scrollIntoView({behavior:'smooth'})}>Shop signature bouquets <ArrowRight size={16}/></button><button className="text-btn" onClick={()=>setBloomed(v=>!v)}>{bloomed?'Settle the petals':'Watch it bloom'} <Sparkles size={14}/></button></div>
+    <div className="alchemy-stage" aria-label="Bouquet assembly animation">
+      <div className="alchemy-glow"/><div className="alchemy-ring"/><div className="alchemy-shadow"/>
+      {pieces.map((p,i)=><div key={p.src} ref={el=>{pieceRefs.current[i]=el}} className={`alchemy-piece ${p.cls}`}><Image src={p.src} alt="" fill sizes="180px"/></div>)}
+      <div className="alchemy-bouquet" ref={bouquetRef}><Image src="/assets/floating-04.png" alt="Pink signature bouquet" fill sizes="(max-width:700px) 78vw, 560px"/></div>
+      {[0,1,2,3].map((i)=><div key={i} className={`alchemy-petal petal-${i}`}><Image src={i%2===0?'/assets/floating-01.png':'/assets/floating-02.png'} alt="" fill sizes="84px"/></div>)}
+      <div className="alchemy-caption">HAND-TIED · BALANCED · READY TO GIFT</div>
     </div>
   </section>;
 }
@@ -231,5 +301,5 @@ export default function Home(){
       gsap.utils.toArray<HTMLElement>('.reveal').forEach(el=>gsap.fromTo(el,{opacity:0,y:38},{opacity:1,y:0,duration:.9,ease:'power3.out',scrollTrigger:{trigger:el,start:'top 86%',once:true}}));
     }); return()=>ctx.revert();
   },[]);
-  return <SmoothScroll><div className="top-scene"><StoreNav cartCount={count} onCart={()=>setCartOpen(true)}/><Hero/></div><main><Marquee/><Shop onAdd={add}/><BouquetMotion/><Occasions/><Editorial/><Services/></main><Footer/><CartDrawer items={cart} setItems={setCart} open={cartOpen} setOpen={setCartOpen}/></SmoothScroll>
+  return <SmoothScroll><FloralFlight/><div className="top-scene"><StoreNav cartCount={count} onCart={()=>setCartOpen(true)}/><Hero/></div><main><Marquee/><Shop onAdd={add}/><BouquetMotion/><Occasions/><Editorial/><Services/></main><Footer/><CartDrawer items={cart} setItems={setCart} open={cartOpen} setOpen={setCartOpen}/></SmoothScroll>
 }
