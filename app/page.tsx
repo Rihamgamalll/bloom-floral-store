@@ -189,56 +189,71 @@ function BouquetMotion(){
   const pieceRefs=useRef<(HTMLDivElement|null)[]>([]);
   const bouquetRef=useRef<HTMLDivElement>(null);
   const copyRef=useRef<HTMLDivElement>(null);
-  const stepRefs=useRef<(HTMLSpanElement|null)[]>([]);
+  const progressRef=useRef<HTMLDivElement>(null);
   const pieces=[
-    {src:'/assets/floating-11.png',x:-220,y:-115,r:-22,s:.84,cls:'stem red'},
-    {src:'/assets/floating-12.png',x:215,y:-128,r:18,s:.8,cls:'stem white'},
-    {src:'/assets/floating-13.png',x:-165,y:118,r:-16,s:.74,cls:'stem pink'},
-    {src:'/assets/floating-14.png',x:170,y:110,r:16,s:.72,cls:'stem yellow'},
-    {src:'/assets/floating-07.png',x:-265,y:30,r:-28,s:.72,cls:'leaf branch'},
-    {src:'/assets/floating-10.png',x:255,y:38,r:25,s:.68,cls:'leaf single'},
+    {src:'/assets/floating-11.png',fromX:-330,fromY:-40,r:-22,finalX:-120,finalY:-36,s:.9},
+    {src:'/assets/floating-12.png',fromX:330,fromY:-55,r:20,finalX:115,finalY:-42,s:.86},
+    {src:'/assets/floating-13.png',fromX:-280,fromY:250,r:-16,finalX:-92,finalY:92,s:.8},
+    {src:'/assets/floating-07.png',fromX:300,fromY:210,r:24,finalX:102,finalY:96,s:.78},
   ];
   useLayoutEffect(()=>{
     if(!ref.current)return;
     const reduce=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const mobile=window.matchMedia('(max-width: 700px)').matches;
+    const mobile=window.matchMedia('(max-width: 760px)').matches;
     const items=pieceRefs.current.filter((el):el is HTMLDivElement=>Boolean(el));
     const ctx=gsap.context(()=>{
-      if(reduce){gsap.set([bouquetRef.current,...items],{autoAlpha:1,x:0,y:0,rotation:0,scale:1});return;}
-      gsap.set(bouquetRef.current,{autoAlpha:0,scale:.72,y:55,rotation:-3});
-      items.forEach((el,i)=>{const p=pieces[i];gsap.set(el,{autoAlpha:0,x:p.x*(mobile ? 0.55 : 1.35),y:p.y*(mobile ? 0.7 : 1.45),rotation:p.r*2.2,scale:.5})});
-      gsap.set(copyRef.current?.children||[],{autoAlpha:0,y:28});
-      gsap.set(stepRefs.current,{opacity:.28});
-      const tl=gsap.timeline({scrollTrigger:{trigger:ref.current,start:'top top',end:()=>`+=${mobile?Math.max(window.innerHeight*2.7,1800):2600}`,scrub: mobile ? 0.38 : 0.18,pin:true,pinSpacing:true,anticipatePin:1,invalidateOnRefresh:true}});
-      tl.to(copyRef.current?.children||[],{autoAlpha:1,y:0,stagger:.08,duration:.5,ease:'power3.out'},0)
-        .to(stepRefs.current[0],{opacity:1,duration:.15},.08);
-      items.forEach((el,i)=>{const p=pieces[i];tl.to(el,{autoAlpha:1,x:p.x*(mobile ? 0.34 : 0.48),y:p.y*(mobile ? 0.38 : 0.55),rotation:p.r*.6,scale:p.s,duration:.52,ease:'back.out(1.15)'},.32+i*.07)});
-      tl.to(stepRefs.current[0],{opacity:.28,duration:.12},1.05).to(stepRefs.current[1],{opacity:1,duration:.12},1.05)
-        .to(items,{x:(i)=>pieces[i].x*(mobile ? 0.12 : 0.18),y:(i)=>pieces[i].y*(mobile ? 0.12 : 0.2),rotation:(i)=>pieces[i].r*.25,scale:(i)=>pieces[i].s*.82,duration:.62,ease:'sine.inOut'},1.08)
-        .to(bouquetRef.current,{autoAlpha:1,scale:1,y:0,rotation:0,duration:.74,ease:'power3.out'},1.22)
-        .to(stepRefs.current[1],{opacity:.28,duration:.12},1.72).to(stepRefs.current[2],{opacity:1,duration:.12},1.72)
-        .to(items,{x:(i)=>pieces[i].x*(mobile ? 0.26 : 0.4),y:(i)=>pieces[i].y*(mobile ? 0.24 : 0.38),rotation:(i)=>pieces[i].r*.7,scale:(i)=>pieces[i].s*.58,opacity:.82,duration:.52,ease:'sine.inOut'},1.75)
-        .to('.alchemy-ring',{rotation:240,scale:1.08,opacity:.7,duration:.7,ease:'sine.inOut'},1.58)
-        .to('.alchemy-petal',{autoAlpha:.88,x:(i)=>[[-105,-78],[118,-64],[-88,92],[108,82]][i%4][0]*(mobile ? 0.62 : 1),y:(i)=>[[-105,-78],[118,-64],[-88,92],[108,82]][i%4][1]*(mobile ? 0.62 : 1),rotation:(i)=>i%2?42:-35,scale:1,duration:.6,stagger:.045,ease:'power3.out'},1.82)
-        .to([bouquetRef.current,...items],{y:'-=12',duration:.55,ease:'sine.inOut'},2.32)
-        .to('.alchemy-caption',{autoAlpha:1,y:0,duration:.35,ease:'power2.out'},2.18);
+      gsap.set(items,{autoAlpha:reduce?1:0,force3D:true});
+      gsap.set(bouquetRef.current,{autoAlpha:reduce?1:0,scale:reduce?1:.82,y:reduce?0:26,force3D:true});
+      if(reduce)return;
+
+      items.forEach((el,i)=>{
+        const p=pieces[i];
+        gsap.set(el,{x:p.fromX*(mobile?.55:1),y:p.fromY*(mobile?.58:1),rotation:p.r*1.5,scale:.72});
+      });
+      gsap.set(copyRef.current?.children||[],{autoAlpha:0,y:24});
+      gsap.set(progressRef.current,{scaleX:0,transformOrigin:'left center'});
+
+      const tl=gsap.timeline({
+        scrollTrigger:{
+          trigger:ref.current,
+          start:mobile?'top 78%':'top top',
+          end:mobile?'bottom 25%':'+=1650',
+          scrub:mobile?.5:.28,
+          pin:mobile?false:true,
+          anticipatePin:1,
+          invalidateOnRefresh:true
+        }
+      });
+
+      tl.to(copyRef.current?.children||[],{autoAlpha:1,y:0,stagger:.06,duration:.36,ease:'power3.out'},0)
+        .to(progressRef.current,{scaleX:1,duration:1.8,ease:'none'},0);
+
+      items.forEach((el,i)=>{
+        const p=pieces[i];
+        tl.to(el,{autoAlpha:1,x:p.finalX*(mobile?.7:1),y:p.finalY*(mobile?.7:1),rotation:p.r*.22,scale:p.s,duration:.5,ease:'power3.out'},.25+i*.09);
+      });
+
+      tl.to(items,{x:(i)=>pieces[i].finalX*(mobile?.26:.38),y:(i)=>pieces[i].finalY*(mobile?.24:.34),rotation:0,scale:(i)=>pieces[i].s*.76,duration:.5,ease:'sine.inOut'},.82)
+        .to(bouquetRef.current,{autoAlpha:1,scale:1,y:0,duration:.58,ease:'power3.out'},.95)
+        .to(items,{autoAlpha:.18,scale:(i)=>pieces[i].s*.64,duration:.34,ease:'sine.out'},1.22)
+        .to('.atelier-final-word',{autoAlpha:1,y:0,duration:.32,ease:'power2.out'},1.3);
     },ref);
     return()=>ctx.revert();
   },[]);
-  return <section id="atelier" className="floral-alchemy" ref={ref}>
+  return <section id="atelier" className="floral-alchemy atelier-calm" ref={ref}>
     <div className="alchemy-copy" ref={copyRef}>
-      <p className="eyebrow">THE ART OF THE BOUQUET</p>
-      <h2>From single stems<br/><em>to one beautiful story.</em></h2>
-      <p>Scroll slowly. Each flower finds its place, the balance settles, and the final wrap turns the arrangement into a gift.</p>
-      <div className="alchemy-steps"><span ref={el=>{stepRefs.current[0]=el}}><b>01</b> STEMS</span><span ref={el=>{stepRefs.current[1]=el}}><b>02</b> BALANCE</span><span ref={el=>{stepRefs.current[2]=el}}><b>03</b> WRAP</span></div>
-      <button className="primary-btn" onClick={()=>document.getElementById('shop')?.scrollIntoView({behavior:'smooth'})}>Shop the finished bouquet <ArrowRight size={16}/></button>
+      <p className="eyebrow">A BOUQUET, COMPOSED</p>
+      <h2>Watch every stem<br/><em>find its place.</em></h2>
+      <p>No visual noise. Just four gestures: stems arrive, balance shifts, wrapping settles, and the finished bouquet appears.</p>
+      <div className="atelier-progress"><div ref={progressRef}/></div>
+      <div className="alchemy-steps"><span><b>01</b> ARRIVE</span><span><b>02</b> BALANCE</span><span><b>03</b> GATHER</span><span><b>04</b> BLOOM</span></div>
+      <button className="primary-btn" onClick={()=>document.getElementById('shop')?.scrollIntoView({behavior:'smooth'})}>Shop the collection <ArrowRight size={16}/></button>
     </div>
     <div className="alchemy-stage" aria-label="Bouquet assembly animation">
-      <div className="alchemy-glow"/><div className="alchemy-ring"/><div className="alchemy-shadow"/>
-      {pieces.map((p,i)=><div key={p.src} ref={el=>{pieceRefs.current[i]=el}} className={`alchemy-piece ${p.cls}`}><Image src={p.src} alt="" fill sizes="180px"/></div>)}
-      <div className="alchemy-bouquet" ref={bouquetRef}><Image src="/assets/floating-04.png" alt="Pink signature bouquet" fill sizes="(max-width:700px) 78vw, 560px"/></div>
-      {[0,1,2,3].map((i)=><div key={i} className={`alchemy-petal petal-${i}`}><Image src={i%2===0?'/assets/floating-01.png':'/assets/floating-02.png'} alt="" fill sizes="84px"/></div>)}
-      <div className="alchemy-caption">HAND-TIED · BALANCED · READY TO GIFT</div>
+      <div className="atelier-soft-disc"/>
+      {pieces.map((p,i)=><div key={p.src} ref={el=>{pieceRefs.current[i]=el}} className="alchemy-piece atelier-piece"><Image src={p.src} alt="" fill sizes="160px"/></div>)}
+      <div className="alchemy-bouquet atelier-bouquet" ref={bouquetRef}><Image src="/assets/floating-04.png" alt="Finished signature bouquet" fill sizes="(max-width:760px) 76vw, 520px"/></div>
+      <div className="atelier-final-word">COMPOSED BY HAND</div>
     </div>
   </section>;
 }
@@ -297,9 +312,25 @@ export default function Home(){
   const count=cart.reduce((s,x)=>s+x.qty,0);
   const add=(p:typeof PRODUCTS[number])=>{setCart(xs=>{const f=xs.find(x=>x.id===p.id);return f?xs.map(x=>x.id===p.id?{...x,qty:x.qty+1}:x):[...xs,{...p,qty:1}]});setCartOpen(true)};
   useEffect(()=>{
+    const reduce=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if(reduce)return;
     const ctx=gsap.context(()=>{
-      gsap.utils.toArray<HTMLElement>('.reveal').forEach(el=>gsap.fromTo(el,{opacity:0,y:38},{opacity:1,y:0,duration:.9,ease:'power3.out',scrollTrigger:{trigger:el,start:'top 86%',once:true}}));
+      ScrollTrigger.batch('.reveal',{
+        start:'top 88%',
+        once:true,
+        onEnter:(batch)=>gsap.fromTo(batch,{autoAlpha:0,y:28},{autoAlpha:1,y:0,duration:.72,stagger:.055,ease:'power3.out',overwrite:true})
+      });
+      gsap.utils.toArray<HTMLElement>('.occasion-card').forEach((el,i)=>{
+        gsap.fromTo(el,{y:34,rotate:i===0?-1.2:i===2?1.2:0},{y:0,rotate:0,duration:.9,ease:'power3.out',scrollTrigger:{trigger:el,start:'top 90%',once:true}});
+      });
+      const feature=document.querySelector<HTMLElement>('.craft-feature-image');
+      if(feature){
+        gsap.fromTo(feature,{clipPath:'inset(0 0 100% 0)'},{clipPath:'inset(0 0 0% 0)',duration:1.2,ease:'power4.out',scrollTrigger:{trigger:feature,start:'top 82%',once:true}});
+      }
+      gsap.utils.toArray<HTMLElement>('.craft-image').forEach((el,i)=>{
+        gsap.fromTo(el,{clipPath:'inset(12% 0 12% 0)'},{clipPath:'inset(0% 0 0% 0)',duration:.8,delay:(i%3)*.04,ease:'power3.out',scrollTrigger:{trigger:el,start:'top 90%',once:true}});
+      });
     }); return()=>ctx.revert();
   },[]);
-  return <SmoothScroll><FloralFlight/><div className="top-scene"><StoreNav cartCount={count} onCart={()=>setCartOpen(true)}/><Hero/></div><main><Marquee/><Shop onAdd={add}/><BouquetMotion/><Occasions/><Editorial/><Services/></main><Footer/><CartDrawer items={cart} setItems={setCart} open={cartOpen} setOpen={setCartOpen}/></SmoothScroll>
+  return <SmoothScroll><div className="top-scene"><StoreNav cartCount={count} onCart={()=>setCartOpen(true)}/><Hero/></div><main><Marquee/><Shop onAdd={add}/><BouquetMotion/><Occasions/><Editorial/><Services/></main><Footer/><CartDrawer items={cart} setItems={setCart} open={cartOpen} setOpen={setCartOpen}/></SmoothScroll>
 }

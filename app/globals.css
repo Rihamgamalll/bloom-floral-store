@@ -382,3 +382,61 @@
   .product-card:hover,.occasion-card:hover .occasion-img{transform:none;box-shadow:none}
 }
 @media(prefers-reduced-motion:reduce){.floral-flight{display:none}.hero-image-stage:after{display:none}.product-card,.product-image img,.occasion-card .occasion-img,.craft-image img,.craft-feature-image img{transition:none!important}}
+
+/* V10 — calm motion system: fewer moving objects, stronger choreography */
+:root{--paper:#f7f2ec;--paper2:#efe7df;--ink:#2d2926;--muted:#746b64;--sage:#7a8372;--wine:#8f595c;--rosewood:#b08079;--sand:#d7c9bd;--line:rgba(45,41,38,.13);--white:#fffdfa}
+body{background:var(--paper)}
+.floral-flight{display:none!important}
+
+/* The motion hero stays airy: one parallax plane, one image plane, no loose stickers */
+.hero{isolation:isolate}
+.hero-main-grid{position:relative;z-index:2}
+.hero-photo-shell{will-change:transform}
+.hero-slide{will-change:opacity,transform}
+.hero-badge{animation:none!important}
+.hero-script{animation:none!important}
+
+/* product area is quieter so the motion sections carry the experience */
+.shop-section{padding-top:clamp(84px,9vw,130px);padding-bottom:clamp(90px,9vw,130px)}
+.product-card{transition:transform .28s ease}
+@media(hover:hover) and (pointer:fine){.product-card:hover{transform:translateY(-4px)}.product-card:hover .product-image img{transform:scale(1.018)}}
+.product-image img{transition:transform .55s cubic-bezier(.2,.7,.2,1)}
+
+/* atelier: single readable GSAP story, transforms only */
+.atelier-calm{background:linear-gradient(135deg,#f8f3ed 0%,#eee4dc 100%)!important;grid-template-columns:minmax(330px,.8fr) minmax(480px,1.2fr)!important;gap:clamp(28px,6vw,96px)!important;min-height:100svh!important}
+.atelier-calm:before{background:radial-gradient(circle at 76% 48%,rgba(143,89,92,.075),transparent 36%)!important}
+.atelier-calm:after{display:none!important}
+.atelier-calm .alchemy-copy h2{font-size:clamp(52px,5.5vw,86px);line-height:.94}
+.atelier-calm .alchemy-copy>p:not(.eyebrow){max-width:490px;color:#665d57}
+.atelier-progress{height:1px;background:rgba(45,41,38,.13);margin:28px 0 18px;overflow:hidden}.atelier-progress>div{height:100%;background:var(--wine);width:100%}
+.atelier-calm .alchemy-steps{border:0;padding:0;margin:0 0 28px;gap:10px 18px}.atelier-calm .alchemy-steps span{font-size:9px;color:#746760}.atelier-calm .alchemy-steps b{color:var(--wine)}
+.atelier-calm .alchemy-stage{min-height:650px;perspective:none}
+.atelier-soft-disc{position:absolute;width:min(46vw,560px);aspect-ratio:1;border-radius:50%;background:radial-gradient(circle at 46% 42%,rgba(255,255,255,.95) 0%,rgba(255,250,245,.72) 48%,rgba(143,89,92,.05) 72%,transparent 74%);border:1px solid rgba(143,89,92,.11)}
+.atelier-piece{width:clamp(108px,10vw,154px)!important;aspect-ratio:.82!important;filter:none!important;will-change:transform,opacity}
+.atelier-bouquet{width:min(43vw,520px)!important;filter:drop-shadow(0 26px 30px rgba(71,48,41,.12))!important;will-change:transform,opacity}
+.atelier-final-word{position:absolute;right:3%;bottom:7%;font-size:9px;letter-spacing:.25em;color:#8b6665;opacity:0;visibility:hidden;transform:translateY(10px)}
+.atelier-calm .alchemy-glow,.atelier-calm .alchemy-ring,.atelier-calm .alchemy-shadow,.atelier-calm .alchemy-petal,.atelier-calm .alchemy-caption{display:none!important}
+
+/* occasion / editorial movement is revealed by composition instead of flying objects */
+.occasion-card,.craft-feature-image,.craft-image{will-change:transform,clip-path}
+.craft-feature-image,.craft-image{clip-path:inset(0)}
+
+@media(max-width:900px){
+  .atelier-calm{grid-template-columns:1fr!important;min-height:auto!important;padding-top:82px!important;padding-bottom:88px!important}
+  .atelier-calm .alchemy-stage{min-height:540px}
+  .atelier-soft-disc{width:min(82vw,500px)}
+  .atelier-bouquet{width:min(72vw,470px)!important}
+  .atelier-piece{width:clamp(92px,22vw,138px)!important}
+}
+@media(max-width:760px){
+  .atelier-calm{gap:26px!important;padding-inline:18px!important}
+  .atelier-calm .alchemy-copy h2{font-size:clamp(44px,12vw,60px)}
+  .atelier-calm .alchemy-copy>p:not(.eyebrow){font-size:16px;line-height:1.58;margin:20px 0 22px}
+  .atelier-calm .alchemy-stage{min-height:430px;margin-inline:-6px}
+  .atelier-soft-disc{width:min(86vw,410px)}
+  .atelier-bouquet{width:min(78vw,390px)!important}
+  .atelier-piece{width:clamp(78px,22vw,118px)!important}
+  .atelier-final-word{right:auto;left:50%;transform:translate(-50%,10px);bottom:2%;white-space:nowrap}
+  .alchemy-steps{display:grid!important;grid-template-columns:repeat(2,1fr)}
+}
+@media(prefers-reduced-motion:reduce){.hero-slide,.product-image img{transition:none!important}.atelier-final-word{opacity:1!important;visibility:visible!important;transform:none!important}}
