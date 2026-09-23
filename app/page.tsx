@@ -13,19 +13,6 @@ const HEROES = [1,2,3,4,5].map(i => `/assets/hero-${i}.png`);
 const FLOATERS = Array.from({length:14},(_,i)=>`/assets/floating-${String(i+1).padStart(2,'0')}.png`);
 const EDITORIALS = Array.from({length:7},(_,i)=>`/assets/editorial-${String(i+1).padStart(2,'0')}.png`);
 
-const FLORAL_FLIGHT = [
-  {src:'/assets/floating-01.png',left:7,top:14,size:68,dx:180,dy:210,rot:360,depth:.72},
-  {src:'/assets/floating-02.png',left:18,top:5,size:76,dx:260,dy:260,rot:-420,depth:.82},
-  {src:'/assets/floating-09.png',left:31,top:12,size:88,dx:-150,dy:300,rot:310,depth:.55},
-  {src:'/assets/floating-10.png',left:74,top:9,size:92,dx:-230,dy:250,rot:-330,depth:.58},
-  {src:'/assets/floating-07.png',left:88,top:25,size:116,dx:-250,dy:320,rot:260,depth:.52},
-  {src:'/assets/floating-11.png',left:91,top:55,size:104,dx:-320,dy:180,rot:-300,depth:.9},
-  {src:'/assets/floating-13.png',left:12,top:61,size:110,dx:280,dy:160,rot:280,depth:.92},
-  {src:'/assets/floating-14.png',left:56,top:2,size:102,dx:70,dy:280,rot:-360,depth:.76},
-  {src:'/assets/floating-01.png',left:44,top:66,size:56,dx:140,dy:110,rot:440,depth:.66},
-  {src:'/assets/floating-02.png',left:67,top:69,size:62,dx:-170,dy:120,rot:-410,depth:.7},
-];
-
 const PRODUCTS = [
   ['Ivory Whisper', 1450, 'Whites'], ['Velvet Promise', 1790, 'Bold'], ['Soft Morning', 1350, 'Romantic'],
   ['Golden Hour', 1890, 'Gift'], ['Sage & Silk', 1690, 'Whites'], ['Pearl Garden', 1550, 'Romantic'],
@@ -40,7 +27,7 @@ function money(n:number){ return `${n.toLocaleString('en-US')} EGP`; }
 
 const INSTAGRAM_URL='https://www.instagram.com/riweb_s';
 
-function StoreNav({cartCount,onCart}:{cartCount:number;onCart:()=>void}){
+function StoreNav({cartCount,savedCount,onCart,onSaved}:{cartCount:number;savedCount:number;onCart:()=>void;onSaved:()=>void}){
   const [mobile,setMobile]=useState(false);
   const scroll=(id:string)=>document.getElementById(id)?.scrollIntoView({behavior:'smooth'});
   return <>
@@ -51,58 +38,16 @@ function StoreNav({cartCount,onCart}:{cartCount:number;onCart:()=>void}){
       <nav className="desktop-nav">
         <button onClick={()=>scroll('shop')}>Shop</button><button onClick={()=>scroll('occasions')}>Occasions</button><button onClick={()=>scroll('atelier')}>Our Atelier</button><button onClick={()=>scroll('stories')}>Stories</button>
       </nav>
-      <div className="nav-actions"><button aria-label="Browse bouquets" onClick={()=>scroll('shop')}><Search size={19}/></button><button onClick={onCart} className="cart-button" aria-label="Cart"><ShoppingBag size={19}/><span>{cartCount}</span></button></div>
+      <div className="nav-actions"><button aria-label="Browse bouquets" onClick={()=>scroll('shop')}><Search size={19}/></button><button onClick={onSaved} className="saved-button" aria-label={`Saved bouquets: ${savedCount}`}><Heart size={19}/><span>{savedCount}</span></button><button onClick={onCart} className="cart-button" aria-label="Cart"><ShoppingBag size={19}/><span>{cartCount}</span></button></div>
     </header>
     <div className={`mobile-panel ${mobile?'open':''}`}><button className="close-mobile" onClick={()=>setMobile(false)}><X/></button>{['shop','occasions','atelier','stories'].map(x=><button key={x} onClick={()=>{scroll(x);setMobile(false)}}>{x}</button>)}</div>
   </>;
-}
-
-function FloralFlight(){
-  const layerRef=useRef<HTMLDivElement>(null);
-  const itemRefs=useRef<(HTMLDivElement|null)[]>([]);
-  useLayoutEffect(()=>{
-    if(!layerRef.current)return;
-    const reduce=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const mobile=window.matchMedia('(max-width: 700px)').matches;
-    const items=itemRefs.current.filter((el):el is HTMLDivElement=>Boolean(el));
-    const ctx=gsap.context(()=>{
-      gsap.set(items,{autoAlpha:0,scale:.52,force3D:true,transformOrigin:'50% 50%'});
-      if(reduce)return;
-      const tl=gsap.timeline({scrollTrigger:{trigger:'#home',start:'top top',endTrigger:'#atelier',end:'55% center',scrub: mobile ? 0.42 : 0.2,invalidateOnRefresh:true}});
-      tl.to(layerRef.current,{autoAlpha:1,duration:.03},0);
-      items.forEach((el,i)=>{
-        const f=FLORAL_FLIGHT[i];
-        const dir=i%2===0?1:-1;
-        tl.to(el,{autoAlpha:.9,scale:.82+(i%3)*.08,x:f.dx*.28,y:f.dy*.22,rotation:f.rot*.2,duration:.18,ease:'power2.out'},i*.012)
-          .to(el,{x:f.dx*dir,y:f.dy+120+(i%4)*32,rotation:f.rot,scale:.96+(f.depth*.1),duration:.48,ease:'sine.inOut'},.2+i*.008)
-          .to(el,{x:f.dx*-.36,y:f.dy*.18-70,rotation:f.rot*1.45,scale:.72+(f.depth*.08),duration:.3,ease:'sine.inOut'},.68+i*.004)
-          .to(el,{autoAlpha:0,scale:.45,duration:.07,ease:'none'},.96);
-      });
-    },layerRef);
-    return()=>ctx.revert();
-  },[]);
-  return <div ref={layerRef} className="floral-flight" aria-hidden="true">{FLORAL_FLIGHT.map((f,i)=><div key={`${f.src}-${i}`} ref={el=>{itemRefs.current[i]=el}} className="floral-flight-item" style={{left:`${f.left}%`,top:`${f.top}%`,width:f.size,height:f.size}}><Image src={f.src} alt="" fill sizes="120px"/></div>)}</div>;
 }
 
 function Hero(){
   const [active,setActive]=useState(0);
   const heroRef=useRef<HTMLElement>(null);
   useEffect(()=>{ const t=setInterval(()=>setActive(v=>(v+1)%HEROES.length),5200); return()=>clearInterval(t);},[]);
-  useEffect(()=>{
-    const el=heroRef.current;
-    if(!el || window.matchMedia('(pointer: coarse)').matches || window.matchMedia('(prefers-reduced-motion: reduce)').matches)return;
-    const gallery=el.querySelector<HTMLElement>('.hero-gallery');
-    const copy=el.querySelector<HTMLElement>('.hero-copy');
-    if(!gallery||!copy)return;
-    const gx=gsap.quickTo(gallery,'x',{duration:1.1,ease:'power3.out'});
-    const gy=gsap.quickTo(gallery,'y',{duration:1.1,ease:'power3.out'});
-    const cx=gsap.quickTo(copy,'x',{duration:1.3,ease:'power3.out'});
-    const cy=gsap.quickTo(copy,'y',{duration:1.3,ease:'power3.out'});
-    const move=(e:PointerEvent)=>{const r=el.getBoundingClientRect();const nx=(e.clientX-r.left)/r.width-.5;const ny=(e.clientY-r.top)/r.height-.5;gx(nx*16);gy(ny*12);cx(nx*-7);cy(ny*-5)};
-    const leave=()=>{gx(0);gy(0);cx(0);cy(0)};
-    el.addEventListener('pointermove',move);el.addEventListener('pointerleave',leave);
-    return()=>{el.removeEventListener('pointermove',move);el.removeEventListener('pointerleave',leave)};
-  },[]);
   useLayoutEffect(()=>{
     const ctx=gsap.context(()=>{
       gsap.set(['.hero-kicker','.hero-title-line','.hero-lead','.hero-cta-row','.hero-photo-shell','.hero-badge','.hero-thumbs','.hero-service-strip','.hero-side-note'],{autoAlpha:0});
@@ -166,94 +111,64 @@ function Hero(){
 }
 function Marquee(){return <div className="marquee"><div>{Array.from({length:8},(_,i)=><span key={i}>FRESH FLOWERS <b>✦</b> HAND WRAPPED <b>✦</b> MADE TO BE REMEMBERED <b>✦</b></span>)}</div></div>}
 
-function ProductCard({p,onAdd}:{p:typeof PRODUCTS[number];onAdd:(p:typeof PRODUCTS[number])=>void}){
+function ProductCard({p,onAdd,saved,onToggleSaved}:{p:typeof PRODUCTS[number];onAdd:(p:typeof PRODUCTS[number])=>void;saved:boolean;onToggleSaved:(id:number)=>void}){
   return <article className="product-card reveal">
-    <div className="product-image"><span className="product-tag">{p.category}</span><button className="heart" aria-label="Save"><Heart size={18}/></button><Image src={p.image} alt={p.name} fill className="contain-image" sizes="(max-width:700px) 50vw, 25vw"/></div>
+    <div className="product-image"><span className="product-tag">{p.category}</span><button className={`heart ${saved?'saved':''}`} aria-label={saved?`Remove ${p.name} from saved bouquets`:`Save ${p.name}`} aria-pressed={saved} onClick={()=>onToggleSaved(p.id)}><Heart size={18} fill={saved?'currentColor':'none'}/></button><Image src={p.image} alt={p.name} fill className="contain-image" sizes="(max-width:700px) 50vw, 25vw"/></div>
     <div className="product-info"><div><h3>{p.name}</h3><p>Fresh bouquet · signature wrap</p></div><strong>{money(p.price)}</strong></div>
     <button className="quick-add" onClick={()=>onAdd(p)}>Quick add <Plus size={16}/></button>
   </article>;
 }
 
-function Shop({onAdd}:{onAdd:(p:typeof PRODUCTS[number])=>void}){
+function Shop({onAdd,savedIds,onToggleSaved,showSavedOnly,onShowAll,onShowSaved}:{onAdd:(p:typeof PRODUCTS[number])=>void;savedIds:number[];onToggleSaved:(id:number)=>void;showSavedOnly:boolean;onShowAll:()=>void;onShowSaved:()=>void}){
   const [filter,setFilter]=useState('All'); const cats=['All','Romantic','Whites','Bold','Gift'];
-  const list=filter==='All'?PRODUCTS:PRODUCTS.filter(p=>p.category===filter);
+  const list=showSavedOnly?PRODUCTS.filter(p=>savedIds.includes(p.id)):(filter==='All'?PRODUCTS:PRODUCTS.filter(p=>p.category===filter));
   return <section id="shop" className="section shop-section">
     <div className="section-head reveal"><div><p className="eyebrow">CURATED BOUQUETS</p><h2>Find the one that<br/><em>says it beautifully.</em></h2></div><p>Every arrangement is composed to order, wrapped with care and delivered ready to make an entrance.</p></div>
-    <div className="filters reveal">{cats.map(c=><button key={c} onClick={()=>setFilter(c)} className={filter===c?'active':''}>{c}</button>)}</div>
-    <div className="product-grid">{list.map(p=><ProductCard key={p.id} p={p} onAdd={onAdd}/>)}</div>
+    <div className="filters reveal">{cats.map(c=><button key={c} onClick={()=>{onShowAll();setFilter(c)}} className={!showSavedOnly&&filter===c?'active':''}>{c}</button>)}<button onClick={()=>{setFilter('All');onShowSaved()}} className={showSavedOnly?'active saved-filter':''} aria-pressed={showSavedOnly}>Saved ({savedIds.length})</button></div>
+    {showSavedOnly&&list.length===0?<div className="saved-empty reveal"><Heart size={26}/><h3>No saved bouquets yet</h3><p>Tap the heart on any bouquet and it will stay saved when you come back.</p><button className="outline-btn" onClick={onShowAll}>Browse all bouquets</button></div>:<div className="product-grid">{list.map(p=><ProductCard key={p.id} p={p} onAdd={onAdd} saved={savedIds.includes(p.id)} onToggleSaved={onToggleSaved}/>)}</div>}
   </section>;
 }
 
 function BouquetMotion(){
   const ref=useRef<HTMLElement>(null);
-  const pieceRefs=useRef<(HTMLDivElement|null)[]>([]);
-  const bouquetRef=useRef<HTMLDivElement>(null);
-  const copyRef=useRef<HTMLDivElement>(null);
-  const progressRef=useRef<HTMLDivElement>(null);
-  const pieces=[
-    {src:'/assets/floating-11.png',fromX:-330,fromY:-40,r:-22,finalX:-120,finalY:-36,s:.9},
-    {src:'/assets/floating-12.png',fromX:330,fromY:-55,r:20,finalX:115,finalY:-42,s:.86},
-    {src:'/assets/floating-13.png',fromX:-280,fromY:250,r:-16,finalX:-92,finalY:92,s:.8},
-    {src:'/assets/floating-07.png',fromX:300,fromY:210,r:24,finalX:102,finalY:96,s:.78},
-  ];
-  useLayoutEffect(()=>{
-    if(!ref.current)return;
-    const reduce=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const mobile=window.matchMedia('(max-width: 760px)').matches;
-    const items=pieceRefs.current.filter((el):el is HTMLDivElement=>Boolean(el));
+  const [bloomed,setBloomed]=useState(false);
+  useEffect(()=>{
     const ctx=gsap.context(()=>{
-      gsap.set(items,{autoAlpha:reduce?1:0,force3D:true});
-      gsap.set(bouquetRef.current,{autoAlpha:reduce?1:0,scale:reduce?1:.82,y:reduce?0:26,force3D:true});
-      if(reduce)return;
-
-      items.forEach((el,i)=>{
-        const p=pieces[i];
-        gsap.set(el,{x:p.fromX*(mobile?.55:1),y:p.fromY*(mobile?.58:1),rotation:p.r*1.5,scale:.72});
-      });
-      gsap.set(copyRef.current?.children||[],{autoAlpha:0,y:24});
-      gsap.set(progressRef.current,{scaleX:0,transformOrigin:'left center'});
-
-      const tl=gsap.timeline({
-        scrollTrigger:{
-          trigger:ref.current,
-          start:mobile?'top 78%':'top top',
-          end:mobile?'bottom 25%':'+=1650',
-          scrub:mobile?.5:.28,
-          pin:mobile?false:true,
-          anticipatePin:1,
-          invalidateOnRefresh:true
-        }
-      });
-
-      tl.to(copyRef.current?.children||[],{autoAlpha:1,y:0,stagger:.06,duration:.36,ease:'power3.out'},0)
-        .to(progressRef.current,{scaleX:1,duration:1.8,ease:'none'},0);
-
-      items.forEach((el,i)=>{
-        const p=pieces[i];
-        tl.to(el,{autoAlpha:1,x:p.finalX*(mobile?.7:1),y:p.finalY*(mobile?.7:1),rotation:p.r*.22,scale:p.s,duration:.5,ease:'power3.out'},.25+i*.09);
-      });
-
-      tl.to(items,{x:(i)=>pieces[i].finalX*(mobile?.26:.38),y:(i)=>pieces[i].finalY*(mobile?.24:.34),rotation:0,scale:(i)=>pieces[i].s*.76,duration:.5,ease:'sine.inOut'},.82)
-        .to(bouquetRef.current,{autoAlpha:1,scale:1,y:0,duration:.58,ease:'power3.out'},.95)
-        .to(items,{autoAlpha:.18,scale:(i)=>pieces[i].s*.64,duration:.34,ease:'sine.out'},1.22)
-        .to('.atelier-final-word',{autoAlpha:1,y:0,duration:.32,ease:'power2.out'},1.3);
+      gsap.fromTo('.signature-main',{y:55,scale:.94,opacity:0},{y:0,scale:1,opacity:1,duration:1.25,ease:'power3.out',scrollTrigger:{trigger:ref.current,start:'top 68%'}});
+      gsap.fromTo('.signature-copy > *',{y:28,opacity:0},{y:0,opacity:1,duration:.8,stagger:.09,ease:'power3.out',scrollTrigger:{trigger:ref.current,start:'top 72%'}});
+      gsap.to('.botanical-a',{y:-22,rotation:7,duration:4.5,yoyo:true,repeat:-1,ease:'sine.inOut'});
+      gsap.to('.botanical-b',{y:18,rotation:-8,duration:5.2,yoyo:true,repeat:-1,ease:'sine.inOut'});
+      gsap.to('.botanical-c',{x:14,y:-10,rotation:5,duration:4.8,yoyo:true,repeat:-1,ease:'sine.inOut'});
+      gsap.to('.signature-main',{y:-18,scrollTrigger:{trigger:ref.current,start:'top bottom',end:'bottom top',scrub:1.3}});
     },ref);
     return()=>ctx.revert();
   },[]);
-  return <section id="atelier" className="floral-alchemy atelier-calm" ref={ref}>
-    <div className="alchemy-copy" ref={copyRef}>
-      <p className="eyebrow">A BOUQUET, COMPOSED</p>
-      <h2>Watch every stem<br/><em>find its place.</em></h2>
-      <p>No visual noise. Just four gestures: stems arrive, balance shifts, wrapping settles, and the finished bouquet appears.</p>
-      <div className="atelier-progress"><div ref={progressRef}/></div>
-      <div className="alchemy-steps"><span><b>01</b> ARRIVE</span><span><b>02</b> BALANCE</span><span><b>03</b> GATHER</span><span><b>04</b> BLOOM</span></div>
-      <button className="primary-btn" onClick={()=>document.getElementById('shop')?.scrollIntoView({behavior:'smooth'})}>Shop the collection <ArrowRight size={16}/></button>
+  useEffect(()=>{
+    if(!ref.current)return;
+    const petals=ref.current.querySelectorAll('.bloom-petal');
+    gsap.to(petals,{x:(i)=>bloomed?[[-120,-50],[135,-45],[-90,105],[118,95]][i%4][0]:0,y:(i)=>bloomed?[[-120,-50],[135,-45],[-90,105],[118,95]][i%4][1]:0,rotation:(i)=>bloomed?(i%2?34:-28):0,scale:bloomed?1.04:.7,opacity:bloomed?.9:.42,duration:1.15,stagger:.06,ease:'power3.inOut'});
+  },[bloomed]);
+  return <section id="atelier" className="signature-section section" ref={ref}>
+    <div className="signature-visual">
+      <div className="signature-frame">
+        <span className="frame-label">BLOOM / SIGNATURE No. 04</span>
+        <div className="signature-orbit"/>
+        <Image className="signature-main" src="/assets/floating-04.png" alt="Signature pink bouquet" width={620} height={620}/>
+        <Image className="bloom-petal petal-one" src="/assets/floating-01.png" alt="Rose petal" width={95} height={95}/>
+        <Image className="bloom-petal petal-two" src="/assets/floating-02.png" alt="Rose petal" width={110} height={110}/>
+        <Image className="bloom-petal petal-three" src="/assets/floating-01.png" alt="Rose petal" width={75} height={75}/>
+        <Image className="bloom-petal petal-four" src="/assets/floating-02.png" alt="Rose petal" width={84} height={84}/>
+      </div>
+      <Image className="botanical botanical-a" src="/assets/floating-07.png" alt="Botanical branch" width={190} height={240}/>
+      <Image className="botanical botanical-b" src="/assets/floating-12.png" alt="White rose" width={150} height={210}/>
+      <Image className="botanical botanical-c" src="/assets/floating-10.png" alt="Leaf" width={150} height={110}/>
     </div>
-    <div className="alchemy-stage" aria-label="Bouquet assembly animation">
-      <div className="atelier-soft-disc"/>
-      {pieces.map((p,i)=><div key={p.src} ref={el=>{pieceRefs.current[i]=el}} className="alchemy-piece atelier-piece"><Image src={p.src} alt="" fill sizes="160px"/></div>)}
-      <div className="alchemy-bouquet atelier-bouquet" ref={bouquetRef}><Image src="/assets/floating-04.png" alt="Finished signature bouquet" fill sizes="(max-width:760px) 76vw, 520px"/></div>
-      <div className="atelier-final-word">COMPOSED BY HAND</div>
+    <div className="signature-copy">
+      <p className="eyebrow">THE BLOOM SIGNATURE</p>
+      <h2>Composed with restraint.<br/><em>Finished with feeling.</em></h2>
+      <p>One focal bouquet, a few deliberate details, and room for every flower to breathe. This is our approach to modern gifting — elegant, balanced and never overdone.</p>
+      <div className="signature-points"><span><b>01</b> Premium stems</span><span><b>02</b> Hand-tied balance</span><span><b>03</b> Signature wrapping</span></div>
+      <div className="signature-actions"><button className="primary-btn" onClick={()=>document.getElementById('shop')?.scrollIntoView({behavior:'smooth'})}>Shop signature bouquets <ArrowRight size={16}/></button><button className="text-btn" onClick={()=>setBloomed(v=>!v)}>{bloomed?'Settle the petals':'Watch it bloom'} <Sparkles size={14}/></button></div>
     </div>
   </section>;
 }
@@ -309,28 +224,22 @@ function CartDrawer({items,setItems,open,setOpen}:{items:CartItem[];setItems:Rea
 
 export default function Home(){
   const [cart,setCart]=useState<CartItem[]>([]); const [cartOpen,setCartOpen]=useState(false);
+  const [savedIds,setSavedIds]=useState<number[]>([]);
+  const [savedReady,setSavedReady]=useState(false);
+  const [showSavedOnly,setShowSavedOnly]=useState(false);
   const count=cart.reduce((s,x)=>s+x.qty,0);
   const add=(p:typeof PRODUCTS[number])=>{setCart(xs=>{const f=xs.find(x=>x.id===p.id);return f?xs.map(x=>x.id===p.id?{...x,qty:x.qty+1}:x):[...xs,{...p,qty:1}]});setCartOpen(true)};
+  const toggleSaved=(id:number)=>setSavedIds(xs=>xs.includes(id)?xs.filter(x=>x!==id):[...xs,id]);
+  const openSaved=()=>{setShowSavedOnly(true);document.getElementById('shop')?.scrollIntoView({behavior:'smooth'});};
   useEffect(()=>{
-    const reduce=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if(reduce)return;
+    try{const raw=window.localStorage.getItem('bloom-saved-bouquets');const parsed=raw?JSON.parse(raw):[];if(Array.isArray(parsed))setSavedIds(parsed.filter((x):x is number=>typeof x==='number'));}catch{}
+    setSavedReady(true);
+  },[]);
+  useEffect(()=>{if(!savedReady)return;try{window.localStorage.setItem('bloom-saved-bouquets',JSON.stringify(savedIds));}catch{}},[savedIds,savedReady]);
+  useEffect(()=>{
     const ctx=gsap.context(()=>{
-      ScrollTrigger.batch('.reveal',{
-        start:'top 88%',
-        once:true,
-        onEnter:(batch)=>gsap.fromTo(batch,{autoAlpha:0,y:28},{autoAlpha:1,y:0,duration:.72,stagger:.055,ease:'power3.out',overwrite:true})
-      });
-      gsap.utils.toArray<HTMLElement>('.occasion-card').forEach((el,i)=>{
-        gsap.fromTo(el,{y:34,rotate:i===0?-1.2:i===2?1.2:0},{y:0,rotate:0,duration:.9,ease:'power3.out',scrollTrigger:{trigger:el,start:'top 90%',once:true}});
-      });
-      const feature=document.querySelector<HTMLElement>('.craft-feature-image');
-      if(feature){
-        gsap.fromTo(feature,{clipPath:'inset(0 0 100% 0)'},{clipPath:'inset(0 0 0% 0)',duration:1.2,ease:'power4.out',scrollTrigger:{trigger:feature,start:'top 82%',once:true}});
-      }
-      gsap.utils.toArray<HTMLElement>('.craft-image').forEach((el,i)=>{
-        gsap.fromTo(el,{clipPath:'inset(12% 0 12% 0)'},{clipPath:'inset(0% 0 0% 0)',duration:.8,delay:(i%3)*.04,ease:'power3.out',scrollTrigger:{trigger:el,start:'top 90%',once:true}});
-      });
+      gsap.utils.toArray<HTMLElement>('.reveal').forEach(el=>gsap.fromTo(el,{opacity:0,y:38},{opacity:1,y:0,duration:.9,ease:'power3.out',scrollTrigger:{trigger:el,start:'top 86%',once:true}}));
     }); return()=>ctx.revert();
   },[]);
-  return <SmoothScroll><div className="top-scene"><StoreNav cartCount={count} onCart={()=>setCartOpen(true)}/><Hero/></div><main><Marquee/><Shop onAdd={add}/><BouquetMotion/><Occasions/><Editorial/><Services/></main><Footer/><CartDrawer items={cart} setItems={setCart} open={cartOpen} setOpen={setCartOpen}/></SmoothScroll>
+  return <SmoothScroll><div className="top-scene"><StoreNav cartCount={count} savedCount={savedIds.length} onCart={()=>setCartOpen(true)} onSaved={openSaved}/><Hero/></div><main><Marquee/><Shop onAdd={add} savedIds={savedIds} onToggleSaved={toggleSaved} showSavedOnly={showSavedOnly} onShowAll={()=>setShowSavedOnly(false)} onShowSaved={()=>setShowSavedOnly(true)}/><BouquetMotion/><Occasions/><Editorial/><Services/></main><Footer/><CartDrawer items={cart} setItems={setCart} open={cartOpen} setOpen={setCartOpen}/></SmoothScroll>
 }
