@@ -1,0 +1,17 @@
+BLOOM — bilingual signature choreography upgrade
+
+What changed
+- Preserved the existing shop, saved bouquets/localStorage, cart, Instagram order flow, social preview files and current asset paths.
+- Added English / Arabic language switch with saved language preference.
+- Arabic uses polished Modern Standard Arabic copy and RTL layout rules.
+- Reworked the hero intro with a word-by-word reveal, gallery mask reveal, subtle scroll movement and desktop mouse parallax.
+- Rebuilt the Signature / Atelier scene around the new purple bouquet (floating-04.png).
+- floating-10, 13, 14, 15, 16, 17 are animated as lilac filler stems circling inward.
+- floating-09, 12, 18, 19, 20, 21 are animated as six white roses entering their final positions.
+- Added a replay button for the bouquet assembly sequence.
+- Kept animation transform/opacity based for performance.
+
+Verification
+- TypeScript check passed with: tsc --noEmit
+- Full Next build could not be completed in the sandbox because Next attempted to download a Linux SWC binary and outbound network access timed out.
+- Run locally: npm install && npm run build && npm run dev
