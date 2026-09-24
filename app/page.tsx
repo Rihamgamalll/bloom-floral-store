@@ -111,47 +111,144 @@ const ROSE_PIECES=[9,12,18,19,20,21].map((n,i)=>({src:`/assets/floating-${String
 const ASSEMBLY_PIECES=[...FILLER_PIECES,...ROSE_PIECES];
 
 function BouquetMotion({lang}:{lang:Lang}){
-  const ref=useRef<HTMLElement>(null);const sceneTl=useRef<gsap.core.Timeline|null>(null);
-  const buildScene=()=>{
-    const root=ref.current;if(!root)return null;
-    const pieces=gsap.utils.toArray<HTMLElement>('.assembly-piece',root);
-    const copyItems=gsap.utils.toArray<HTMLElement>('.signature-copy > *',root);
-    const radius=Math.max(window.innerWidth,window.innerHeight)*.78+180;
+  const ref=useRef<HTMLElement>(null);
+  const replayTl=useRef<gsap.core.Timeline|null>(null);
+
+  const copy=lang==='ar'?{
+    eyebrow:'تكوين حيّ، لا صورة ثابتة',
+    kicker:'كل زهرة تعرف طريقها.',
+    title:<>تفصيلةٌ تقترب…<br/><em>فتكتمل الحكاية.</em></>,
+    body:'تصل الأغصان والورود من أطراف المشهد في إيقاعٍ هادئ، تلتفّ حول الباقة للحظة، ثم تنساب إلى داخلها حتى لا يبقى سوى التكوين النهائي — طبيعيًا، رقيقًا، وكأنه كان هكذا منذ البداية.',
+    cue:'مرّر ببطء وشاهد الباقة تكتمل',
+    shop:'اكتشف الباقات',
+    replay:'أعد المشهد',
+    chips:['تفاصيل تصل','أماكن تُكتشف','باقة تكتمل']
+  }:{
+    eyebrow:'NOT A STILL LIFE',
+    kicker:'Every flower knows where to go.',
+    title:<>A little detail arrives…<br/><em>and the whole bouquet exhales.</em></>,
+    body:'Stems and blooms drift in from the edges, hover for a breath, then melt into the bouquet until the final composition is all that remains — soft, natural and quietly alive.',
+    cue:'Scroll slowly and watch the bouquet come together',
+    shop:'Discover the bouquets',
+    replay:'Replay the scene',
+    chips:['Details arrive','Places are found','The bouquet settles']
+  };
+
+  const createScene=(root:HTMLElement,scrollDriven:boolean)=>{
+    const q=gsap.utils.selector(root);
+    const pieces=q<HTMLElement>('.assembly-piece');
+    const bouquet=q<HTMLElement>('.signature-main');
+    const copyItems=q<HTMLElement>('.signature-copy > *');
+    const reveal=q<HTMLElement>('.signature-reveal');
+    const whisper=q<HTMLElement>('.signature-whisper');
+    const orbit=q<HTMLElement>('.signature-orbit-line');
+
+    const w=Math.max(window.innerWidth,760);
+    const h=Math.max(window.innerHeight,640);
+    const starts=[
+      {x:-w*.58,y:-h*.20},{x:w*.55,y:-h*.30},{x:-w*.62,y:h*.18},{x:w*.60,y:h*.22},
+      {x:-w*.30,y:-h*.66},{x:w*.26,y:h*.68},{x:-w*.52,y:-h*.48},{x:w*.50,y:-h*.42},
+      {x:-w*.64,y:h*.42},{x:w*.63,y:h*.48},{x:-w*.18,y:h*.72},{x:w*.15,y:-h*.70}
+    ];
+
     pieces.forEach((el,i)=>{
-      const angle=(-Math.PI*.95)+(i/(Math.max(1,pieces.length-1)))*(Math.PI*1.9);
-      const jitter=(i%2?1:-1)*70;
-      gsap.set(el,{x:Math.cos(angle)*radius+jitter,y:Math.sin(angle)*radius,rotation:ASSEMBLY_PIECES[i].rot+(i%2?55:-55),scale:.72+(i%3)*.08,opacity:0,transformOrigin:'50% 65%'});
+      const st=starts[i%starts.length];
+      gsap.set(el,{x:st.x,y:st.y,rotation:ASSEMBLY_PIECES[i].rot+(i%2?95:-95),scale:.62+(i%4)*.07,opacity:0,transformOrigin:'50% 65%'});
     });
-    gsap.set('.signature-main',{scale:.965,opacity:1,y:8,rotation:-.6});
-    gsap.set(copyItems,{y:24,opacity:0});
-    gsap.set('.signature-status',{opacity:0,y:8});
-    const tl=gsap.timeline({paused:true,defaults:{ease:'power3.out'}});sceneTl.current=tl;
-    tl.to('.signature-status',{opacity:1,y:0,duration:.35})
-      .to(copyItems,{y:0,opacity:1,duration:.58,stagger:.06},'-=.14');
+    gsap.set(bouquet,{scale:.82,opacity:0,y:42,rotation:-2});
+    gsap.set(copyItems,{y:30,opacity:0});
+    gsap.set(reveal,{scale:.88,opacity:0});
+    gsap.set(whisper,{opacity:0,y:12});
+    gsap.set(orbit,{scale:.82,opacity:0,rotation:-10});
+
+    const tl=gsap.timeline(scrollDriven?{}:{paused:true,defaults:{ease:'power3.out'}});
+    replayTl.current=tl;
+
+    tl.to(bouquet,{scale:.94,opacity:1,y:6,rotation:0,duration:.9,ease:'power3.out'},0)
+      .to(orbit,{scale:1,opacity:.38,rotation:0,duration:1.05,ease:'power2.out'},.06)
+      .to(copyItems,{y:0,opacity:1,duration:.68,stagger:.07,ease:'power3.out'},.16)
+      .to(whisper,{opacity:.7,y:0,duration:.4},.42);
+
     pieces.forEach((el,i)=>{
-      const piece=ASSEMBLY_PIECES[i];
-      const arrive=0.55+i*.10;
-      tl.to(el,{opacity:1,duration:.18},arrive)
-        .to(el,{x:(i%3-1)*18,y:(i%2?1:-1)*14,rotation:piece.rot*.2,scale:piece.kind==='rose'?.72:.82,duration:.9,ease:'power3.out'},arrive)
-        .to(el,{x:0,y:0,rotation:0,scale:.18,opacity:0,duration:.58,ease:'power2.in'},arrive+.72)
-        .to('.signature-main',{scale:1.012,duration:.16,ease:'power2.out'},arrive+1.12)
-        .to('.signature-main',{scale:1,duration:.28,ease:'sine.out'},arrive+1.28);
+      const p=ASSEMBLY_PIECES[i];
+      const t=.72+i*.105;
+      const nearX=(i%3-1)*44;
+      const nearY=(i%2?1:-1)*(18+(i%3)*7);
+      tl.to(el,{opacity:1,duration:.16,ease:'power1.out'},t)
+        .to(el,{x:nearX,y:nearY,rotation:p.rot*.24,scale:p.kind==='rose'?.72:.80,duration:.92,ease:'power3.out'},t)
+        .to(el,{x:0,y:0,rotation:0,scale:.10,opacity:0,duration:.48,ease:'power2.in'},t+.78)
+        .to(bouquet,{scale:1.012,duration:.12,ease:'power2.out'},t+1.08)
+        .to(bouquet,{scale:1,duration:.22,ease:'sine.out'},t+1.20);
     });
-    tl.to('.signature-main',{y:0,rotation:0,scale:1,duration:.5,ease:'power2.out'},'>-.2')
-      .to('.signature-status',{opacity:.72,duration:.35},'<');
+
+    tl.to(bouquet,{scale:1,y:0,rotation:0,duration:.5,ease:'power2.out'},'>-.12')
+      .to(reveal,{scale:1,opacity:1,duration:.6,ease:'back.out(1.5)'},'<+.02')
+      .to(orbit,{opacity:.18,duration:.45},'<');
+
     return tl;
   };
-  const play=()=>{const tl=sceneTl.current;if(tl){tl.pause(0);tl.invalidate();}sceneTl.current=buildScene();sceneTl.current?.play();};
-  useLayoutEffect(()=>{const root=ref.current;if(!root)return;const ctx=gsap.context(()=>{
-    const tl=buildScene();
-    const trigger=ScrollTrigger.create({trigger:root,start:'top 70%',once:true,onEnter:()=>tl?.play()});
-    const fine=window.matchMedia('(pointer:fine)').matches;
-    let move:((e:MouseEvent)=>void)|undefined;
-    if(fine){move=(e:MouseEvent)=>{const r=root.getBoundingClientRect();const nx=(e.clientX-r.left)/r.width-.5;const ny=(e.clientY-r.top)/r.height-.5;gsap.to('.signature-main',{x:nx*8,y:ny*6,duration:1.1,ease:'power3.out',overwrite:'auto'});};root.addEventListener('mousemove',move);}
-    return()=>{trigger.kill();if(move)root.removeEventListener('mousemove',move);};
-  },root);return()=>ctx.revert();},[]);
-  const copy=lang==='ar'?{ey:'بصمتنا الخاصة',title:<>تتقدّم التفاصيل واحدةً واحدة…<br/><em>ثم تختفي داخل الباقة.</em></>,p:'تأتي الأغصان والورود من أطراف المشهد، تقترب بهدوء، ثم تنساب إلى مواضعها حتى لا يبقى أمامك سوى الباقة كما ينبغي أن تُرى: متوازنة، طبيعية، ومكتملة بلا ضجيج.',p1:'زهور مختارة',p2:'تكوين متوازن',p3:'لمسة نهائية هادئة',shop:'تسوّق باقاتنا',watch:'أعد المشهد',status:'راقب التفاصيل وهي تجد طريقها إلى الباقة'}:{ey:'THE BLOOM SIGNATURE',title:<>Every detail arrives…<br/><em>then disappears into the bouquet.</em></>,p:'Stems and roses enter from the edges of the scene, move inward with intention, then melt into place — leaving only the bouquet itself: natural, balanced and quietly complete.',p1:'Selected stems',p2:'Balanced composition',p3:'Quiet finishing touch',shop:'Shop signature bouquets',watch:'Replay the scene',status:'Watch each detail find its way into the bouquet'};
-  return <section id="atelier" className="signature-section section" ref={ref}><div className="signature-visual"><div className="signature-frame"><span className="frame-label">BLOOM / SIGNATURE No. 04</span><Image className="signature-main" src="/assets/floating-04.png" alt="BLOOM signature bouquet" width={620} height={620}/>{ASSEMBLY_PIECES.map((p,i)=><Image key={p.src} className={`assembly-piece ${p.kind==='rose'?'assembly-rose':'assembly-filler'}`} src={p.src} alt="" aria-hidden="true" width={p.kind==='rose'?118:152} height={p.kind==='rose'?165:190} style={{left:`${p.x}%`,top:`${p.y}%`}}/>)}<p className="signature-status">{copy.status}</p></div></div><div className="signature-copy"><p className="eyebrow">{copy.ey}</p><h2>{copy.title}</h2><p>{copy.p}</p><div className="signature-points"><span><b>01</b>{copy.p1}</span><span><b>02</b>{copy.p2}</span><span><b>03</b>{copy.p3}</span></div><div className="signature-actions"><button className="primary-btn" onClick={()=>document.getElementById('shop')?.scrollIntoView({behavior:'smooth'})}>{copy.shop} <ArrowRight size={16}/></button><button className="text-btn" onClick={play}>{copy.watch} <Sparkles size={14}/></button></div></div></section>;
+
+  const replay=()=>{
+    const root=ref.current;if(!root)return;
+    replayTl.current?.kill();
+    createScene(root,false).play(0);
+  };
+
+  useLayoutEffect(()=>{
+    const root=ref.current;if(!root)return;
+    const mm=gsap.matchMedia();
+    const ctx=gsap.context(()=>{
+      mm.add('(min-width: 901px)',()=>{
+        const tl=createScene(root,true);
+        const st=ScrollTrigger.create({trigger:root,start:'top top',end:'+=135%',scrub:.75,pin:true,anticipatePin:1,animation:tl});
+        let move:((e:MouseEvent)=>void)|undefined;
+        if(window.matchMedia('(pointer:fine)').matches){
+          const q=gsap.utils.selector(root);
+          move=(e:MouseEvent)=>{
+            const r=root.getBoundingClientRect();
+            const nx=(e.clientX-r.left)/r.width-.5;
+            const ny=(e.clientY-r.top)/r.height-.5;
+            gsap.to(q('.signature-main'),{x:nx*10,y:ny*7,duration:1.15,ease:'power3.out',overwrite:'auto'});
+            gsap.to(q('.signature-orbit-line'),{x:nx*16,y:ny*11,duration:1.45,ease:'power3.out',overwrite:'auto'});
+          };
+          root.addEventListener('mousemove',move);
+        }
+        return()=>{st.kill();if(move)root.removeEventListener('mousemove',move)};
+      });
+
+      mm.add('(max-width: 900px)',()=>{
+        const tl=createScene(root,false);
+        const st=ScrollTrigger.create({trigger:root,start:'top 76%',once:true,onEnter:()=>tl.play(0)});
+        return()=>st.kill();
+      });
+    },root);
+    return()=>{replayTl.current?.kill();mm.revert();ctx.revert()};
+  },[]);
+
+  return <section id="atelier" className="signature-section signature-theatre section" ref={ref}>
+    <div className="signature-bg-word" aria-hidden="true">BLOOM</div>
+    <div className="signature-stage">
+      <div className="signature-copy">
+        <p className="eyebrow">{copy.eyebrow}</p>
+        <p className="signature-kicker">{copy.kicker}</p>
+        <h2>{copy.title}</h2>
+        <p className="signature-lead">{copy.body}</p>
+        <div className="signature-chips">{copy.chips.map((x,i)=><span key={x}><b>0{i+1}</b>{x}</span>)}</div>
+        <div className="signature-actions signature-reveal">
+          <button className="primary-btn" onClick={()=>document.getElementById('shop')?.scrollIntoView({behavior:'smooth'})}>{copy.shop} <ArrowRight size={16}/></button>
+          <button className="text-btn" onClick={replay}>{copy.replay} <Sparkles size={14}/></button>
+        </div>
+      </div>
+
+      <div className="signature-visual">
+        <div className="signature-orbit-line" aria-hidden="true"/>
+        <span className="signature-index">BLOOM / SIGNATURE No. 04</span>
+        <Image className="signature-main" src="/assets/floating-04.png" alt="BLOOM signature bouquet" width={820} height={820}/>
+        {ASSEMBLY_PIECES.map((p,i)=><Image key={p.src} className={`assembly-piece ${p.kind==='rose'?'assembly-rose':'assembly-filler'}`} src={p.src} alt="" aria-hidden="true" width={p.kind==='rose'?128:170} height={p.kind==='rose'?178:212} style={{left:`${p.x}%`,top:`${p.y}%`}}/>)}
+        <p className="signature-whisper">{copy.cue}</p>
+      </div>
+    </div>
+  </section>;
 }
 
 function Occasions({lang}:{lang:Lang}){const cards=lang==='ar'?[['للحب','لفتة كبيرة… بصياغة ناعمة.','/assets/product-12.webp'],['للتخرّج','للحظةٍ استحقّوها بعد كل هذا السعي.','/assets/product-14.webp'],['للخطوبة','بداية جميلة، تُقدَّم بين الزهور.','/assets/product-03.webp']]:[['For Love','A grand gesture, softened.','/assets/product-12.webp'],['Graduation','For the moment they worked so hard for.','/assets/product-14.webp'],['Engagement','A beautiful beginning, wrapped in flowers.','/assets/product-03.webp']];return <section id="occasions" className="section occasion-section"><div className="center-head reveal"><p className="eyebrow">{lang==='ar'?'اختر اللحظة':'SHOP BY MOMENT'}</p><h2>{lang==='ar'?<>زهور للحظات<br/><em>التي تستحق أن تُحفظ.</em></>:<>Flowers for the moments<br/><em>worth remembering.</em></>}</h2></div><div className="occasion-grid">{cards.map((c,i)=><article className="occasion-card reveal" key={c[0]}><div className="occasion-img"><Image src={c[2]} alt={c[0]} fill className="contain-image"/></div><span>0{i+1}</span><h3>{c[0]}</h3><p>{c[1]}</p><button onClick={()=>document.getElementById('shop')?.scrollIntoView({behavior:'smooth'})}>{lang==='ar'?'استكشف المجموعة':'Explore collection'} <ArrowRight size={15}/></button></article>)}</div></section>}

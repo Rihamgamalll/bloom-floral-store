@@ -362,3 +362,324 @@
 
 @media(max-width:1050px){.signature-section{min-height:auto}.signature-visual{min-height:590px}.signature-frame{width:min(600px,86%)}}
 @media(max-width:720px){.signature-section{padding-top:58px!important}.signature-visual{min-height:420px;margin:8px -8px 0!important}.signature-frame{width:96%!important;max-width:440px}.signature-main{width:94%!important}.assembly-filler{width:27%!important}.assembly-rose{width:19%!important}.signature-status{bottom:-8px;font-size:10px;line-height:1.5}.frame-label{left:7%!important}.signature-copy h2{font-size:clamp(38px,11vw,50px)!important}.craft-feature-image .contain-image,.craft-image .contain-image{object-position:center}}
+
+/* =========================================================
+   SIGNATURE THEATRE — redesigned from the V2 base
+   ========================================================= */
+.signature-section.signature-theatre{
+  position:relative;
+  display:block;
+  min-height:100vh;
+  padding:0!important;
+  overflow:hidden;
+  isolation:isolate;
+  background:
+    radial-gradient(circle at 22% 24%,rgba(187,165,204,.18),transparent 28%),
+    radial-gradient(circle at 82% 72%,rgba(218,191,191,.16),transparent 30%),
+    linear-gradient(135deg,#f8f4ee 0%,#f3eee8 52%,#f7f2ed 100%)!important;
+}
+.signature-section.signature-theatre:before{
+  content:""!important;
+  display:block!important;
+  position:absolute!important;
+  inset:-18% -8% auto auto!important;
+  width:48vw!important;
+  height:48vw!important;
+  max-width:720px!important;
+  max-height:720px!important;
+  border-radius:50%!important;
+  background:radial-gradient(circle,rgba(255,255,255,.76),rgba(255,255,255,0) 68%)!important;
+  filter:none!important;
+  pointer-events:none;
+  z-index:0;
+}
+.signature-bg-word{
+  position:absolute;
+  left:50%;
+  top:50%;
+  transform:translate(-50%,-50%);
+  font-family:Georgia,'Times New Roman',serif;
+  font-size:clamp(170px,24vw,430px);
+  line-height:.8;
+  letter-spacing:-.08em;
+  color:rgba(87,64,76,.035);
+  pointer-events:none;
+  user-select:none;
+  z-index:0;
+  white-space:nowrap;
+}
+.signature-stage{
+  position:relative;
+  z-index:1;
+  width:min(1500px,100%);
+  min-height:100vh;
+  margin:0 auto;
+  padding:clamp(70px,7vw,115px) clamp(38px,6vw,96px);
+  display:grid;
+  grid-template-columns:minmax(360px,.86fr) minmax(560px,1.14fr);
+  align-items:center;
+  gap:clamp(40px,5vw,86px);
+}
+.signature-theatre .signature-copy{
+  position:relative;
+  z-index:12;
+  max-width:610px;
+  align-self:center;
+  padding-bottom:4vh;
+}
+.signature-theatre .signature-copy .eyebrow{
+  margin:0 0 16px;
+  color:#8f5d68;
+  letter-spacing:.28em;
+  font-size:10px;
+}
+.signature-kicker{
+  margin:0 0 12px!important;
+  font-family:'Times New Roman',Georgia,serif!important;
+  font-size:clamp(17px,1.3vw,21px)!important;
+  line-height:1.5!important;
+  color:#71645e!important;
+  max-width:470px!important;
+}
+.signature-theatre .signature-copy h2{
+  margin:0;
+  max-width:610px;
+  font-size:clamp(52px,5.25vw,88px)!important;
+  line-height:.91!important;
+  letter-spacing:-.045em!important;
+  font-weight:400;
+  color:#26221f;
+  text-wrap:balance;
+}
+.signature-theatre .signature-copy h2 em{
+  color:#8c555e;
+  font-weight:400;
+}
+.signature-theatre .signature-lead{
+  margin:28px 0 27px!important;
+  max-width:545px!important;
+  font-family:'Times New Roman',Georgia,serif!important;
+  font-size:clamp(17px,1.28vw,20px)!important;
+  line-height:1.7!important;
+  color:#665f59!important;
+}
+.signature-chips{
+  display:flex;
+  flex-wrap:wrap;
+  gap:9px;
+  margin:0 0 28px;
+}
+.signature-chips span{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  min-height:39px;
+  padding:9px 13px 9px 10px;
+  border:1px solid rgba(83,66,61,.12);
+  border-radius:999px;
+  background:rgba(255,255,255,.43);
+  backdrop-filter:blur(7px);
+  color:#655b56;
+  font-size:10px;
+  letter-spacing:.04em;
+}
+.signature-chips b{
+  display:grid;
+  place-items:center;
+  width:22px;
+  height:22px;
+  border-radius:50%;
+  background:#8f5d68;
+  color:#fff;
+  font-size:7px;
+  font-weight:500;
+  letter-spacing:.08em;
+}
+.signature-theatre .signature-actions{
+  display:flex;
+  align-items:center;
+  gap:24px;
+  margin-top:5px;
+}
+.signature-theatre .signature-actions .primary-btn{
+  box-shadow:0 18px 38px rgba(54,43,39,.10);
+}
+.signature-theatre .signature-actions .text-btn{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  opacity:.78;
+}
+.signature-theatre .signature-actions .text-btn:hover{opacity:1}
+
+.signature-theatre .signature-visual{
+  position:relative;
+  min-height:clamp(610px,70vh,790px)!important;
+  margin:0!important;
+  overflow:visible;
+  display:grid;
+  place-items:center;
+  isolation:isolate;
+}
+.signature-orbit-line{
+  position:absolute;
+  z-index:0;
+  width:min(650px,82%);
+  aspect-ratio:1;
+  border:1px solid rgba(129,98,122,.17);
+  border-radius:50%;
+  pointer-events:none;
+}
+.signature-orbit-line:before,
+.signature-orbit-line:after{
+  content:"";
+  position:absolute;
+  border-radius:50%;
+  border:1px solid rgba(129,98,122,.09);
+}
+.signature-orbit-line:before{inset:7%}
+.signature-orbit-line:after{inset:17%}
+.signature-theatre .signature-index{
+  position:absolute;
+  z-index:9;
+  top:8%;
+  right:3%;
+  color:#91646f;
+  font-size:8px;
+  letter-spacing:.25em;
+  white-space:nowrap;
+}
+.signature-theatre .signature-main{
+  position:relative;
+  z-index:3;
+  display:block;
+  width:min(720px,92%)!important;
+  max-width:none!important;
+  height:auto;
+  object-fit:contain;
+  filter:drop-shadow(0 34px 36px rgba(67,49,62,.13))!important;
+  will-change:transform,opacity;
+}
+.signature-theatre .assembly-piece{
+  position:absolute;
+  z-index:6;
+  transform:translate(-50%,-50%);
+  object-fit:contain;
+  pointer-events:none;
+  will-change:transform,opacity;
+  filter:drop-shadow(0 10px 12px rgba(66,48,61,.08));
+}
+.signature-theatre .assembly-filler{width:24%;height:auto}
+.signature-theatre .assembly-rose{width:17%;height:auto}
+.signature-whisper{
+  position:absolute;
+  z-index:8;
+  bottom:6%;
+  left:50%;
+  transform:translateX(-50%);
+  width:max-content;
+  max-width:78%;
+  margin:0;
+  padding:9px 15px;
+  border-radius:999px;
+  background:rgba(250,247,243,.72);
+  border:1px solid rgba(89,69,65,.09);
+  backdrop-filter:blur(8px);
+  font-family:'Times New Roman',Georgia,serif;
+  font-size:12px;
+  letter-spacing:.04em;
+  color:#826c74;
+  text-align:center;
+  pointer-events:none;
+}
+
+[dir="rtl"] .signature-theatre .signature-copy{text-align:right}
+[dir="rtl"] .signature-theatre .signature-copy .eyebrow{letter-spacing:.08em}
+[dir="rtl"] .signature-kicker,
+[dir="rtl"] .signature-theatre .signature-lead,
+[dir="rtl"] .signature-whisper{font-family:"Segoe UI",Tahoma,Arial,sans-serif!important;letter-spacing:0!important}
+[dir="rtl"] .signature-theatre .signature-actions{direction:rtl}
+[dir="rtl"] .signature-theatre .signature-index{right:auto;left:3%}
+[dir="rtl"] .signature-chips{direction:rtl}
+
+@media(max-width:1180px){
+  .signature-stage{grid-template-columns:minmax(330px,.9fr) minmax(470px,1.1fr);gap:32px;padding-inline:42px}
+  .signature-theatre .signature-copy h2{font-size:clamp(48px,5.7vw,72px)!important}
+  .signature-theatre .signature-main{width:min(650px,94%)!important}
+}
+
+@media(max-width:900px){
+  .signature-section.signature-theatre{min-height:auto;padding:0!important}
+  .signature-stage{
+    min-height:auto;
+    grid-template-columns:1fr;
+    gap:10px;
+    padding:72px 22px 74px;
+  }
+  .signature-theatre .signature-copy{
+    max-width:690px;
+    padding:0;
+    margin:0 auto;
+    text-align:center;
+    order:1;
+  }
+  [dir="rtl"] .signature-theatre .signature-copy{text-align:center}
+  .signature-theatre .signature-copy .eyebrow{margin-bottom:12px}
+  .signature-kicker{margin:0 auto 10px!important;max-width:560px!important}
+  .signature-theatre .signature-copy h2{
+    max-width:700px;
+    margin-inline:auto;
+    font-size:clamp(46px,8.5vw,72px)!important;
+    line-height:.94!important;
+  }
+  .signature-theatre .signature-lead{max-width:650px!important;margin:22px auto 20px!important}
+  .signature-chips{justify-content:center;margin-bottom:21px}
+  .signature-theatre .signature-actions{justify-content:center}
+  .signature-theatre .signature-visual{
+    order:2;
+    min-height:570px!important;
+    width:100%;
+    max-width:740px;
+    margin:0 auto!important;
+  }
+  .signature-theatre .signature-main{width:min(610px,88%)!important}
+  .signature-theatre .signature-index{top:7%;right:6%}
+  [dir="rtl"] .signature-theatre .signature-index{right:auto;left:6%}
+  .signature-whisper{bottom:4%}
+  .signature-bg-word{font-size:40vw;top:62%}
+}
+
+@media(max-width:600px){
+  .signature-stage{padding:56px 16px 60px;gap:2px}
+  .signature-theatre .signature-copy h2{
+    font-size:clamp(39px,12.4vw,56px)!important;
+    line-height:.93!important;
+    letter-spacing:-.035em!important;
+  }
+  .signature-kicker{font-size:15px!important;line-height:1.45!important}
+  .signature-theatre .signature-lead{font-size:16px!important;line-height:1.62!important;margin:18px auto 17px!important}
+  .signature-chips{gap:6px}
+  .signature-chips span{min-height:34px;padding:7px 10px 7px 8px;font-size:9px}
+  .signature-chips b{width:19px;height:19px;font-size:6px}
+  .signature-theatre .signature-actions{display:grid;grid-template-columns:1fr;gap:8px;width:100%;max-width:390px;margin:0 auto}
+  .signature-theatre .signature-actions .primary-btn{width:100%;justify-content:center}
+  .signature-theatre .signature-actions .text-btn{justify-content:center;min-height:42px}
+  .signature-theatre .signature-visual{min-height:440px!important;margin-top:3px!important}
+  .signature-theatre .signature-main{width:min(430px,96%)!important}
+  .signature-orbit-line{width:88%}
+  .signature-theatre .assembly-filler{width:28%}
+  .signature-theatre .assembly-rose{width:20%}
+  .signature-theatre .signature-index{top:4%;right:2%;font-size:6px;letter-spacing:.18em}
+  [dir="rtl"] .signature-theatre .signature-index{right:auto;left:2%}
+  .signature-whisper{bottom:1%;max-width:92%;font-size:10px;padding:7px 11px}
+  .signature-bg-word{font-size:52vw;top:67%}
+}
+
+@media(prefers-reduced-motion:reduce){
+  .signature-theatre .assembly-piece{display:none!important}
+  .signature-theatre .signature-main,
+  .signature-theatre .signature-copy>* ,
+  .signature-reveal,
+  .signature-whisper,
+  .signature-orbit-line{opacity:1!important;transform:none!important}
+}
